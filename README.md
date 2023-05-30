@@ -100,3 +100,5 @@ sudo docker compose exec backend python manage.py load_ingrs
 ```url
 http://127.0.0.1/api/docs/
 ```
+# Адрес сайта
+http://51.250.103.179
