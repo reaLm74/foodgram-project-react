@@ -36,6 +36,7 @@ class AddAndDeleteSubscribe(
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
 
+    queryset = User.objects.all()
     serializer_class = SubscribeSerializer
     lookup_field = 'user_id'
 
