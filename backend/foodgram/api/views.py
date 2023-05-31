@@ -40,7 +40,7 @@ class AddAndDeleteSubscribe(
     # queryset = User.objects.all()
     serializer_class = SubscribeSerializer
     # lookup_field = 'user_id'
-    lookup_field = 'id'
+    # lookup_field = 'id'
     lookup_url_kwarg = 'user_id'
 
     def get_queryset(self):
