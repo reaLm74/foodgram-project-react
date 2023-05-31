@@ -224,7 +224,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         buffer = io.BytesIO()
         page = canvas.Canvas(buffer)
-        pdfmetrics.registerFont(TTFont('Arial'))
+        pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
         x_position, y_position = 50, 800
         shopping_cart = (
             request.user.shopping_cart.recipe.
@@ -232,7 +232,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
                 'ingredients__name',
                 'ingredients__measurement_unit'
             ).annotate(amount=Sum('recipe__amount')).order_by())
-        page.setFont('Vera', 14)
+        page.setFont('Arial', 14)
         if shopping_cart:
             indent = 20
             page.drawString(x_position, y_position, 'Список покупок:')
@@ -250,11 +250,11 @@ class RecipesViewSet(viewsets.ModelViewSet):
             buffer.seek(0)
             return FileResponse(
                 buffer, as_attachment=True, filename=FILENAME)
-        page.setFont('Vera', 24)
+        page.setFont('Arial', 24)
         page.drawString(
             x_position,
             y_position,
-            'Cписок покупок пуст!')
+            'Список покупок пуст!')
         page.save()
         buffer.seek(0)
         return FileResponse(buffer, as_attachment=True, filename=FILENAME)
