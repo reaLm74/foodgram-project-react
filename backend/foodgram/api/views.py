@@ -22,11 +22,11 @@ from api.filters import IngredientFilter, RecipeFilter
 from api.mixins import GetObjectMixin, PermissionAndPaginationMixin
 from recipes.models import (FavoriteRecipe, Ingredient, Recipe, ShoppingCart,
                             Subscribe, Tag)
+
 from .serializers import (IngredientSerializer, RecipeReadSerializer,
                           RecipeWriteSerializer, SubscribeSerializer,
-                          TagSerializer, TokenSerializer,
-                          UserCreateSerializer, UserListSerializer,
-                          UserPasswordSerializer)
+                          TagSerializer, TokenSerializer, UserCreateSerializer,
+                          UserListSerializer, UserPasswordSerializer)
 
 User = get_user_model()
 FILENAME = 'shoppingcart.pdf'

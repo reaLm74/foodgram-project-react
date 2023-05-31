@@ -1,6 +1,7 @@
 from rest_framework.permissions import AllowAny
 
 from api.permissions import IsAdminOrReadOnly
+
 from .serializers import SubscribeRecipeSerializer
 
 
