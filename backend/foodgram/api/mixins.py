@@ -1,8 +1,8 @@
-# from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
 
 from api.permissions import IsAdminOrReadOnly
-# from recipes.models import Recipe
+from recipes.models import Recipe
 from .serializers import SubscribeRecipeSerializer
 
 
@@ -12,13 +12,13 @@ class GetObjectMixin:
     permission_classes = (AllowAny,)
     # lookup_field = 'recipe_id'
     # lookup_field = 'id'
-    lookup_url_kwarg = 'recipe_id'
+    # lookup_url_kwarg = 'recipe_id'
 
-    # def get_object(self):
-    #     recipe_id = self.kwargs['recipe_id']
-    #     recipe = get_object_or_404(Recipe, id=recipe_id)
-    #     self.check_object_permissions(self.request, recipe)
-    #     return recipe
+    def get_object(self):
+        recipe_id = self.kwargs['recipe_id']
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        self.check_object_permissions(self.request, recipe)
+        return recipe
 
 
 class PermissionAndPaginationMixin:
