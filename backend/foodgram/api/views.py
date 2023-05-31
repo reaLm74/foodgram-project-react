@@ -5,7 +5,6 @@ from django.contrib.auth.hashers import make_password
 from django.db.models.aggregates import Count, Sum
 from django.db.models.expressions import Exists, OuterRef, Value
 from django.http import FileResponse
-from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -20,12 +19,12 @@ from rest_framework.permissions import (SAFE_METHODS, AllowAny,
 from rest_framework.response import Response
 
 from api.filters import IngredientFilter, RecipeFilter
-from api.permissions import IsAdminOrReadOnly
+from api.mixins import GetObjectMixin, PermissionAndPaginationMixin
 from recipes.models import (FavoriteRecipe, Ingredient, Recipe, ShoppingCart,
                             Subscribe, Tag)
 from .serializers import (IngredientSerializer, RecipeReadSerializer,
-                          RecipeWriteSerializer, SubscribeRecipeSerializer,
-                          SubscribeSerializer, TagSerializer, TokenSerializer,
+                          RecipeWriteSerializer, SubscribeSerializer,
+                          TagSerializer, TokenSerializer,
                           UserCreateSerializer, UserListSerializer,
                           UserPasswordSerializer)
 
@@ -33,32 +32,12 @@ User = get_user_model()
 FILENAME = 'shoppingcart.pdf'
 
 
-class GetObjectMixin:
-    """Миксина для удаления/добавления рецептов избранных/корзины."""
-
-    serializer_class = SubscribeRecipeSerializer
-    permission_classes = (AllowAny,)
-
-    def get_object(self):
-        recipe_id = self.kwargs['recipe_id']
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        self.check_object_permissions(self.request, recipe)
-        return recipe
-
-
-class PermissionAndPaginationMixin:
-    """Миксина для списка тегов и ингридиентов."""
-
-    permission_classes = (IsAdminOrReadOnly,)
-    pagination_class = None
-
-
 class AddAndDeleteSubscribe(
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
-    """Подписка и отписка от пользователя."""
 
     serializer_class = SubscribeSerializer
+    lookup_field = 'user_id'
 
     def get_queryset(self):
         return self.request.user.follower.select_related(
@@ -68,12 +47,6 @@ class AddAndDeleteSubscribe(
         ).annotate(
             recipes_count=Count('following__recipe'),
             is_subscribed=Value(True), )
-
-    def get_object(self):
-        user_id = self.kwargs['user_id']
-        user = get_object_or_404(User, id=user_id)
-        self.check_object_permissions(self.request, user)
-        return user
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -97,7 +70,6 @@ class AddDeleteFavoriteRecipe(
         GetObjectMixin,
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
-    """Добавление и удаление рецепта в/из избранных."""
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -113,7 +85,6 @@ class AddDeleteShoppingCart(
         GetObjectMixin,
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
-    """Добавление и удаление рецепта в/из корзины."""
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -126,7 +97,6 @@ class AddDeleteShoppingCart(
 
 
 class AuthToken(ObtainAuthToken):
-    """Авторизация пользователя."""
 
     serializer_class = TokenSerializer
     permission_classes = (AllowAny,)
@@ -142,7 +112,6 @@ class AuthToken(ObtainAuthToken):
 
 
 class UsersViewSet(UserViewSet):
-    """Пользователи."""
 
     serializer_class = UserListSerializer
     permission_classes = (IsAuthenticated,)
@@ -170,7 +139,6 @@ class UsersViewSet(UserViewSet):
         detail=False,
         permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
-        """Получить на кого пользователь подписан."""
 
         user = request.user
         queryset = Subscribe.objects.filter(user=user)
@@ -182,7 +150,6 @@ class UsersViewSet(UserViewSet):
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
-    """Рецепты."""
 
     queryset = Recipe.objects.all()
     filterset_class = RecipeFilter
@@ -220,7 +187,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
         methods=['get'],
         permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        """Качаем список с ингредиентами."""
 
         buffer = io.BytesIO()
         page = canvas.Canvas(buffer)
@@ -263,7 +229,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
 class TagsViewSet(
         PermissionAndPaginationMixin,
         viewsets.ModelViewSet):
-    """Список тэгов."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -272,7 +237,6 @@ class TagsViewSet(
 class IngredientsViewSet(
         PermissionAndPaginationMixin,
         viewsets.ModelViewSet):
-    """Список ингредиентов."""
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -281,16 +245,9 @@ class IngredientsViewSet(
 
 @api_view(['post'])
 def set_password(request):
-    """Изменить пароль."""
 
     serializer = UserPasswordSerializer(
         data=request.data,
         context={'request': request})
-    if serializer.is_valid():
-        serializer.save()
-        return Response(
-            {'message': 'Пароль изменен!'},
-            status=status.HTTP_201_CREATED)
-    return Response(
-        {'error': 'Введите верные данные!'},
-        status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
