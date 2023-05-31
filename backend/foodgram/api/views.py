@@ -40,6 +40,7 @@ class AddAndDeleteSubscribe(
     # queryset = User.objects.all()
     serializer_class = SubscribeSerializer
     # lookup_field = 'user_id'
+    lookup_field = 'id'
 
     def get_queryset(self):
         return self.request.user.follower.select_related(
@@ -50,11 +51,11 @@ class AddAndDeleteSubscribe(
             recipes_count=Count('following__recipe'),
             is_subscribed=Value(True), )
 
-    def get_object(self):
-        user_id = self.kwargs['user_id']
-        user = get_object_or_404(User, id=user_id)
-        self.check_object_permissions(self.request, user)
-        return user
+    # def get_object(self):
+    #     user_id = self.kwargs['user_id']
+    #     user = get_object_or_404(User, id=user_id)
+    #     self.check_object_permissions(self.request, user)
+    #     return user
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
