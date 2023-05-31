@@ -37,11 +37,7 @@ class AddAndDeleteSubscribe(
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
 
-    # queryset = User.objects.all()
     serializer_class = SubscribeSerializer
-    # lookup_field = 'user_id'
-    # lookup_field = 'id'
-    # lookup_url_kwarg = 'user_id'
 
     def get_queryset(self):
         return self.request.user.follower.select_related(

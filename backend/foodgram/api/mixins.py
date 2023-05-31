@@ -7,12 +7,8 @@ from .serializers import SubscribeRecipeSerializer
 
 
 class GetObjectMixin:
-    # queryset = Recipe.objects.all()
     serializer_class = SubscribeRecipeSerializer
     permission_classes = (AllowAny,)
-    # lookup_field = 'recipe_id'
-    # lookup_field = 'id'
-    # lookup_url_kwarg = 'recipe_id'
 
     def get_object(self):
         recipe_id = self.kwargs['recipe_id']
